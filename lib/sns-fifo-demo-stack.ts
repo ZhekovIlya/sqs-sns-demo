@@ -28,7 +28,8 @@ export class SnsFifoDemoStack extends Stack {
 
     const replayFifoQueue = new sqs.Queue(this, 'ReplayFifoQueue', {
       visibilityTimeout: Duration.seconds(45),
-      fifo: true
+      fifo: true,
+      contentBasedDeduplication: true
     });
 
     /* SNS TOPIC */
@@ -88,8 +89,8 @@ export class SnsFifoDemoStack extends Stack {
     });
 
     /* skip adding queue to a topic - comment on first run  */
-    topic.addSubscription(replayQueueSubPolicy);
-    topic.addSubscription(replayFifoQueueSubPolicy);
+    // topic.addSubscription(replayQueueSubPolicy);
+    // topic.addSubscription(replayFifoQueueSubPolicy);
 
     /* Replayed Messages Event Consumer Lambda */
     const replayConsumer = new Function(this, 'StandardConsumerFunction', {

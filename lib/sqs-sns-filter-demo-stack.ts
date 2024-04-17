@@ -1,21 +1,27 @@
-import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  CfnOutput,
+  Duration,
+  Stack,
+  StackProps
+} from 'aws-cdk-lib';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as eventsources from 'aws-cdk-lib/aws-lambda-event-sources';
-import { Construct } from 'constructs';
+import {
+  Construct
+} from 'constructs';
 import {
   Function,
   Runtime,
   Code,
   HttpMethod,
-  FunctionUrlAuthType,
-  EventSourceMapping,
+  FunctionUrlAuthType
 } from 'aws-cdk-lib/aws-lambda';
 import path = require('path');
 
 export class SqsSnsFilterDemoStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props ? : StackProps) {
     super(scope, id, props);
 
     /* SQS Queues */
@@ -26,9 +32,6 @@ export class SqsSnsFilterDemoStack extends Stack {
       visibilityTimeout: Duration.seconds(45)
     });
     const healthQueue = new sqs.Queue(this, 'Health', {
-      visibilityTimeout: Duration.seconds(45)
-    });
-    const newVolvoQueue = new sqs.Queue(this, 'NewVolvo', {
       visibilityTimeout: Duration.seconds(45)
     });
 
@@ -78,20 +81,6 @@ export class SqsSnsFilterDemoStack extends Stack {
       },
     }));
 
-    /* Filter policy based on message payload
-       Accept only Volvo cars at max 4 years old or from 2008 to 2010 */
-    topic.addSubscription(new subs.SqsSubscription(newVolvoQueue, {
-      filterPolicyWithMessageBody: {
-        car: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.stringFilter({
-          allowlist: ['volvo'],
-        })),
-        year: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.numericFilter({
-          between: { start: 2008, stop: 2010 },
-          greaterThanOrEqualTo: 2020
-        }))
-      }
-    }));
-
     /* All Event Consumer Lambda */
     const allConsumer = new Function(this, 'AllConsumerFunction', {
       code: Code.fromAsset(path.join(__dirname, '../lambda/filter-fanout')),
@@ -121,6 +110,31 @@ export class SqsSnsFilterDemoStack extends Stack {
     healthConsumer.addEventSource(new eventsources.SqsEventSource(healthQueue));
     healthQueue.grantConsumeMessages(healthConsumer);
 
+
+
+
+
+
+    const newVolvoQueue = new sqs.Queue(this, 'NewVolvo', {
+      visibilityTimeout: Duration.seconds(45)
+    });
+
+    /* Filter policy based on message payload
+       Accept only Volvo cars at max 4 years old or from 2008 to 2010 */
+    topic.addSubscription(new subs.SqsSubscription(newVolvoQueue, {
+      filterPolicyWithMessageBody: {
+        car: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.stringFilter({
+          allowlist: ['volvo'],
+        })),
+        year: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.numericFilter({
+          between: {
+            start: 2008,
+            stop: 2010
+          },
+          greaterThanOrEqualTo: 2020
+        }))
+      }
+    }));
 
     /* Volvo Event consumer Lambda */
     const newVolvoConsumer = new Function(this, 'NewVolvoConsumerFunction', {
