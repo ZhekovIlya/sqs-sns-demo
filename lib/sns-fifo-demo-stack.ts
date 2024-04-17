@@ -87,7 +87,7 @@ export class SnsFifoDemoStack extends Stack {
       }
     });
 
-    /* skip adding queue to a topic  */
+    /* skip adding queue to a topic - comment on first run  */
     topic.addSubscription(replayQueueSubPolicy);
     topic.addSubscription(replayFifoQueueSubPolicy);
 

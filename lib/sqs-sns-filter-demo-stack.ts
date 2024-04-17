@@ -39,7 +39,7 @@ export class SqsSnsFilterDemoStack extends Stack {
     const sender = new Function(this, 'SenderFunction', {
       code: Code.fromAsset(path.join(__dirname, '../lambda/filter-fanout')),
       runtime: Runtime.NODEJS_16_X,
-      handler: 'filterSender.handler',
+      handler: 'sender.handler',
       environment: {
         TOPIC_ARN: topic.topicArn,
       },
@@ -79,7 +79,7 @@ export class SqsSnsFilterDemoStack extends Stack {
     }));
 
     /* Filter policy based on message payload
-       Accept only Volvo cars at max 4 years old */
+       Accept only Volvo cars at max 4 years old or from 2008 to 2010 */
     topic.addSubscription(new subs.SqsSubscription(newVolvoQueue, {
       filterPolicyWithMessageBody: {
         car: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.stringFilter({
